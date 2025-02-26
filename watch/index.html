@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Watch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f2f5;
+            transition: background-color 0.3s;
+        }
+
+        body.dark {
+            background-color: #121212;
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            transition: background-color 0.3s;
+            max-width: 90%;
+            width: 400px;
+        }
+
+        body.dark .container {
+            background-color: #1e1e1e;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-mode {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-mode.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-theme {
+            background-color: #e0e0e0;
+            color: #333;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        body.dark .btn-mode:not(.active), 
+        body.dark .btn-theme {
+            background-color: #333;
+            color: #e0e0e0;
+        }
+
+        .digital-clock {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .time {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ampm {
+            font-size: 1.5rem;
+            margin-left: 0.5rem;
+        }
+
+        .seconds {
+            font-size: 2rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        body.dark .seconds {
+            color: #aaa;
+        }
+
+        .date {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        body.dark .date {
+            color: #aaa;
+        }
+
+        .analog-clock {
+            display: none;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background-color: #f8f8f8;
+            border: 4px solid #e0e0e0;
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        body.dark .analog-clock {
+            background-color: #2a2a3e;
+            border-color: #444;
+        }
+
+        .analog-clock .hour,
+        .analog-clock .min,
+        .analog-clock .sec {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+        }
+
+        .analog-clock .hour {
+            width: 6px;
+            height: 60px;
+            background-color: #333;
+            transform: translate(-50%, -100%);
+            border-radius: 3px;
+        }
+
+        .analog-clock .min {
+            width: 4px;
+            height: 80px;
+            background-color: #555;
+            transform: translate(-50%, -100%);
+            border-radius: 2px;
+        }
+
+        .analog-clock .sec {
+            width: 2px;
+            height: 90px;
+            background-color: #e74c3c;
+            transform: translate(-50%, -100%);
+            border-radius: 1px;
+        }
+
+        body.dark .analog-clock .hour {
+            background-color: #ccc;
+        }
+
+        body.dark .analog-clock .min {
+            background-color: #aaa;
+        }
+
+        .analog-clock .center {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #e74c3c;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .analog-clock .number {
+            position: absolute;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+        }
+
+        body.dark .analog-clock .number {
+            color: #ccc;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .time {
+                font-size: 3rem;
+            }
+            
+            .analog-clock {
+                width: 200px;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <button class="btn btn-mode active" data-mode="digital">Digital</button>
+            <button class="btn btn-mode" data-mode="analog">Analog</button>
+            <button class="btn btn-theme">☀️</button>
+        </div>
+        
+        <div class="digital-clock">
+            <div class="time">
+                <span class="hours">12</span>:<span class="minutes">00</span><span class="ampm">PM</span>
+            </div>
+            <div class="seconds">00</div>
+            <div class="date">Thursday, February 27, 2025</div>
+        </div>
+        
+        <div class="analog-clock">
+            <div class="hour"></div>
+            <div class="min"></div>
+            <div class="sec"></div>
+            <div class="center"></div>
+            <!-- Clock numbers will be added via JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const digitalClock = document.querySelector('.digital-clock');
+        const analogClock = document.querySelector('.analog-clock');
+        const hoursEl = document.querySelector('.hours');
+        const minutesEl = document.querySelector('.minutes');
+        const secondsEl = document.querySelector('.seconds');
+        const ampmEl = document.querySelector('.ampm');
+        const dateEl = document.querySelector('.date');
+        const hourHand = document.querySelector('.hour');
+        const minuteHand = document.querySelector('.min');
+        const secondHand = document.querySelector('.sec');
+        const modeButtons = document.querySelectorAll('.btn-mode');
+        const themeButton = document.querySelector('.btn-theme');
+
+        // Add clock numbers
+        for (let i = 1; i <= 12; i++) {
+            const angle = (i * 30) * (Math.PI / 180);
+            const x = 125 + 100 * Math.sin(angle);
+            const y = 125 - 100 * Math.cos(angle);
+            
+            const number = document.createElement('div');
+            number.classList.add('number');
+            number.textContent = i;
+            number.style.left = `${x - 15}px`;
+            number.style.top = `${y - 15}px`;
+            
+            analogClock.appendChild(number);
+        }
+
+        // Update the clock
+        function updateClock() {
+            const now = new Date();
+            
+            // Update digital clock
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            
+            // Format for 12-hour clock
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const hours12 = hours % 12 || 12;
+            
+            hoursEl.textContent = hours12;
+            minutesEl.textContent = minutes.toString().padStart(2, '0');
+            secondsEl.textContent = seconds.toString().padStart(2, '0');
+            ampmEl.textContent = ampm;
+            
+            // Format date
+            const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+            dateEl.textContent = now.toLocaleDateString('en-US', options);
+            
+            // Update analog clock
+            const hourDeg = (hours % 12) * 30 + minutes * 0.5;
+            const minuteDeg = minutes * 6 + seconds * 0.1;
+            const secondDeg = seconds * 6;
+            
+            hourHand.style.transform = `translate(-50%, -100%) rotate(${hourDeg}deg)`;
+            minuteHand.style.transform = `translate(-50%, -100%) rotate(${minuteDeg}deg)`;
+            secondHand.style.transform = `translate(-50%, -100%) rotate(${secondDeg}deg)`;
+        }
+
+        // Switch between digital and analog modes
+        modeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modeButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                const mode = button.dataset.mode;
+                if (mode === 'digital') {
+                    digitalClock.style.display = 'flex';
+                    analogClock.style.display = 'none';
+                } else {
+                    digitalClock.style.display = 'none';
+                    analogClock.style.display = 'block';
+                }
+            });
+        });
+
+        // Toggle theme
+        themeButton.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            themeButton.textContent = document.body.classList.contains('dark') ? '🌙' : '☀️';
+        });
+
+        // Update clock every second
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
