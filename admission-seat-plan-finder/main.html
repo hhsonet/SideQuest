@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UIU Admission Test Seat Plan Finder</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet"/>
+  <style>
+    body {
+      background-color: #f9fafb;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03);
+      padding: 2rem;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+      border-color: #4f46e5;
+    }
+
+    .search-btn {
+      background-color: #4f46e5;
+      color: white;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .search-btn:hover {
+      background-color: #4338ca;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 2rem;
+      height: 2rem;
+      border: 0.25rem solid rgba(79, 70, 229, 0.3);
+      border-radius: 50%;
+      border-top-color: #4f46e5;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .error-message {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+
+    .result-header {
+      background-color: #eef2ff;
+      padding: 1rem;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .result-body {
+      border: 1px solid #e5e7eb;
+      border-radius: 0 0 8px 8px;
+      padding: 1.25rem;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 640px) {
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .label {
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .value {
+      color: #1f2937;
+      font-weight: 400;
+    }
+
+    .value-bold {
+      font-weight: 500;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 1rem;
+      color: #9ca3af;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="display: flex; justify-content: center;">
+      <img src="assets/logo/uiu_png.png" alt="UIU" width="200" />
+    </div>
+
+    <div class="card">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 1.875rem; font-weight: 700; color: #1f2937;">Find Your Seat</h1>
+        <p style="margin-top: 0.5rem; color: #6b7280;">Enter your admit card roll number</p>
+      </div>
+
+      <form id="searchForm" style="margin-bottom: 1.5rem;">
+        <div style="margin-bottom: 1rem;">
+          <label for="rollNumber" style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.25rem;">Roll Number</label>
+          <input type="text" id="rollNumber" placeholder="e.g. 100001" class="form-input" required />
+        </div>
+
+        <button type="submit" class="search-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+          Find Seat Plan
+        </button>
+      </form>
+
+      <div id="loading" class="hidden" style="text-align: center; padding: 1rem 0;">
+        <div class="spinner"></div>
+        <p style="margin-top: 0.5rem; color: #6b7280;">Searching...</p>
+      </div>
+
+      <div id="error" class="error-message hidden">Roll Number not found. Please check and try again.</div>
+
+      <div id="seatPlanResult" class="fade-in hidden" style="margin-top: 1.5rem;">
+        <div class="result-header">
+          <h2 style="font-size: 1.125rem; font-weight: 500; color: #3730a3;">Seat Plan Details</h2>
+        </div>
+
+        <div class="result-body">
+          <div class="result-grid">
+            <div>
+              <p class="label">Roll Number</p>
+              <p id="resultRoll" class="value value-bold"></p>
+            </div>
+            <div>
+              <p class="label">Name</p>
+              <p id="resultName" class="value"></p>
+            </div>
+            <div>
+              <p class="label">Room</p>
+              <p id="resultRoom" class="value"></p>
+            </div>
+            <div>
+              <p class="label">Location</p>
+              <p id="resultBuilding" class="value"></p>
+            </div>
+            <div>
+              <p class="label">Exam Date</p>
+              <p class="value">April 25, 2025</p>
+            </div>
+            <div>
+              <p class="label">Exam Time</p>
+              <p id="resultTime" class="value"></p>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 1rem;">
+          <p style="font-size: 0.75rem; color: #6b7280;">Please arrive 30 minutes before your scheduled exam time</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>For any issues, contact the admission office</p>
+      <p style="margin-top: 0.25rem;">© CITS, United International University (UIU)</p>
+    </div>
+  </div>
+
+  <script>
+    const sampleData = [
+      { rollNo: '100001', name: 'John Doe', room: 'A-101', seat: '12', building: '2nd Floor', time: '10:00 AM' },
+      { rollNo: '100002', name: 'Jane Smith', room: 'A-102', seat: '05', building: '1st Floor', time: '10:00 AM' },
+      { rollNo: '100003', name: 'Robert Johnson', room: 'B-201', seat: '21', building: '2nd Floor', time: '01:00 PM' },
+    ];
+
+    const searchForm = document.getElementById('searchForm');
+    const loadingElement = document.getElementById('loading');
+    const errorElement = document.getElementById('error');
+    const resultElement = document.getElementById('seatPlanResult');
+
+    searchForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const rollNo = document.getElementById('rollNumber').value.trim();
+
+      errorElement.classList.add('hidden');
+      resultElement.classList.add('hidden');
+      loadingElement.classList.remove('hidden');
+
+      setTimeout(() => {
+        loadingElement.classList.add('hidden');
+
+        const result = sampleData.find((item) => item.rollNo === rollNo);
+
+        if (result) {
+          document.getElementById('resultRoll').textContent = result.rollNo;
+          document.getElementById('resultName').textContent = result.name;
+          document.getElementById('resultRoom').textContent = result.room;
+          document.getElementById('resultBuilding').textContent = result.building;
+          document.getElementById('resultTime').textContent = result.time;
+
+          resultElement.classList.remove('hidden');
+        } else {
+          errorElement.textContent = 'No seat plan found for this roll number. Please check and try again.';
+          errorElement.classList.remove('hidden');
+        }
+      }, 800);
+    });
+  </script>
+</body>
+</html>
