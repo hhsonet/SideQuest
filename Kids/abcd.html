@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Fun Animation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
+        body {
+            font-family: 'Fredoka One', cursive;
+            overflow: hidden;
+            background-color: #f0f4f8;
+            transition: background-color 0.5s ease;
+        }
+
+        /* Container for the stage */
+        .stage {
+            perspective: 1000px;
+        }
+
+        /* The Letter Element */
+        .letter-box {
+            font-size: 15rem;
+            line-height: 1;
+            text-shadow: 10px 10px 0px rgba(0,0,0,0.1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+            /* Default state hidden */
+        }
+
+        /* Animation Keyframes */
+
+        /* A Animations */
+        @keyframes bounceInDown {
+            0% { opacity: 0; transform: translate(-50%, -200%); }
+            60% { opacity: 1; transform: translate(-50%, -40%); }
+            80% { transform: translate(-50%, -60%); }
+            100% { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        @keyframes rotateOut {
+            0% { opacity: 1; transform: translate(-50%, -50%) rotate(0deg); }
+            100% { opacity: 0; transform: translate(-50%, -50%) rotate(180deg) scale(0); }
+        }
+
+        /* B Animations */
+        @keyframes slideInLeft {
+            0% { opacity: 0; transform: translate(-200%, -50%) skewX(-20deg); }
+            100% { opacity: 1; transform: translate(-50%, -50%) skewX(0deg); }
+        }
+        @keyframes slideOutRight {
+            0% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(150%, -50%) skewX(20deg); }
+        }
+
+        /* C Animations */
+        @keyframes zoomInSpin {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(-360deg); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+        @keyframes zoomOut {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(5); }
+        }
+
+        /* D Animations */
+        @keyframes elasticUp {
+            0% { opacity: 0; transform: translate(-50%, 100%); }
+            60% { transform: translate(-50%, -60%); }
+            80% { transform: translate(-50%, -45%); }
+            100% { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        @keyframes dropDown {
+            0% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, 200%) rotate(-45deg); }
+        }
+
+        /* Idle Animations (while staying on screen) */
+        @keyframes heartbeat {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            15% { transform: translate(-50%, -50%) scale(1.1); }
+            30% { transform: translate(-50%, -50%) scale(1); }
+            45% { transform: translate(-50%, -50%) scale(1.1); }
+            60% { transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        @keyframes wobble {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) rotate(-5deg); }
+            75% { transform: translate(-50%, -50%) rotate(5deg); }
+        }
+
+        /* Helper Classes applied by JS */
+        .anim-enter-a { animation: bounceInDown 1s ease-out forwards; }
+        .anim-idle-a { animation: heartbeat 2s infinite; }
+        .anim-exit-a { animation: rotateOut 1s ease-in forwards; }
+
+        .anim-enter-b { animation: slideInLeft 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; }
+        .anim-idle-b { animation: wobble 2s infinite; }
+        .anim-exit-b { animation: slideOutRight 1s ease-in forwards; }
+
+        .anim-enter-c { animation: zoomInSpin 1s ease-out forwards; }
+        .anim-idle-c { animation: heartbeat 2s infinite; }
+        .anim-exit-c { animation: zoomOut 0.8s ease-in forwards; }
+
+        .anim-enter-d { animation: elasticUp 1s ease-out forwards; }
+        .anim-idle-d { animation: wobble 2s infinite; }
+        .anim-exit-d { animation: dropDown 1s ease-in forwards; }
+
+        /* Confetti/Shape Decorations */
+        .shape {
+            position: absolute;
+            opacity: 0.6;
+            animation: float 6s infinite ease-in-out;
+            z-index: 0;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        .shadow-text {
+            color: white;
+            -webkit-text-stroke: 4px black;
+        }
+
+        /* Start Overlay */
+        #start-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-center items-center relative transition-colors duration-1000">
+
+    <!-- Start Overlay for Audio Permissions -->
+    <div id="start-overlay">
+        <button onclick="startGame()" class="text-4xl bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-6 px-12 rounded-full border-4 border-white shadow-lg animate-bounce">
+            CLICK TO START ▶
+        </button>
+        <p class="text-white mt-4 text-xl">Enable Sound & Animation</p>
+    </div>
+
+    <!-- Decorative Background Shapes -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="shape bg-yellow-300 w-24 h-24 rounded-full top-10 left-10 blur-sm"></div>
+        <div class="shape bg-blue-300 w-32 h-32 rounded-lg bottom-20 right-20 animation-delay-2000 blur-sm"></div>
+        <div class="shape bg-pink-300 w-16 h-16 transform rotate-45 top-1/2 left-20 blur-sm"></div>
+        <div class="shape bg-green-300 w-20 h-20 rounded-full top-20 right-1/4 blur-sm"></div>
+        <div class="shape bg-purple-300 w-12 h-12 rounded-full bottom-10 left-1/3 blur-sm"></div>
+    </div>
+
+    <!-- Main Stage -->
+    <div class="stage relative w-full h-full max-w-2xl max-h-screen flex justify-center items-center z-10">
+        <div id="letter-display" class="letter-box font-bold select-none">
+            <!-- Letter injected here -->
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="absolute bottom-10 z-20 flex gap-4">
+        <button onclick="togglePlay()" id="play-btn" class="bg-white border-4 border-black text-black px-6 py-2 rounded-full font-bold hover:bg-gray-100 active:scale-95 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            PAUSE
+        </button>
+        <button onclick="toggleFullScreen()" id="fs-btn" class="bg-blue-500 border-4 border-black text-white px-6 py-2 rounded-full font-bold hover:bg-blue-400 active:scale-95 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            FULLSCREEN
+        </button>
+    </div>
+
+    <script>
+        // Configuration for generation
+        const rawColors = [
+            { color: '#EF4444', bg: '#FEF2F2' }, // Red
+            { color: '#3B82F6', bg: '#EFF6FF' }, // Blue
+            { color: '#10B981', bg: '#ECFDF5' }, // Green
+            { color: '#F59E0B', bg: '#FFFBEB' }, // Yellow
+            { color: '#8B5CF6', bg: '#F5F3FF' }, // Purple
+            { color: '#EC4899', bg: '#FDF2F8' }  // Pink
+        ];
+        const animSets = ['a', 'b', 'c', 'd'];
+        
+        // Generate A-Z Data
+        const letters = [];
+        const startChar = 'A'.charCodeAt(0);
+        const endChar = 'Z'.charCodeAt(0);
+
+        for (let i = 0; i <= endChar - startChar; i++) {
+            const char = String.fromCharCode(startChar + i);
+            const colorTheme = rawColors[i % rawColors.length];
+            const animTheme = animSets[i % animSets.length];
+            
+            letters.push({
+                char: char,
+                color: colorTheme.color,
+                bg: colorTheme.bg,
+                enter: `anim-enter-${animTheme}`,
+                idle: `anim-idle-${animTheme}`,
+                exit: `anim-exit-${animTheme}`
+            });
+        }
+
+        let currentIndex = 0;
+        let isPlaying = false; // Starts false until overlay clicked
+        let animationTimeout;
+        const letterEl = document.getElementById('letter-display');
+        const bodyEl = document.body;
+        const btnEl = document.getElementById('play-btn');
+        const overlayEl = document.getElementById('start-overlay');
+
+        // Timing configurations (milliseconds)
+        const ENTER_DURATION = 2500;
+        const IDLE_DURATION = 500; // Increased time (was 1500)
+        const EXIT_DURATION = 2500;
+
+        // Speech Synthesis Setup
+        const synth = window.speechSynthesis;
+
+        function speakLetter(char) {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+            const utterance = new SpeechSynthesisUtterance(char);
+            utterance.rate = 1;
+            utterance.pitch = 1.2; // Slightly higher pitch for fun
+            utterance.volume = 1;
+            synth.speak(utterance);
+        }
+
+        function startGame() {
+            overlayEl.style.display = 'none';
+            isPlaying = true;
+            updateLetter(currentIndex);
+        }
+
+        function updateLetter(index) {
+            const currentData = letters[index];
+            
+            // 1. Reset Classes
+            letterEl.className = 'letter-box shadow-text';
+            
+            // 2. Set Content & Color
+            letterEl.innerText = currentData.char;
+            letterEl.style.textShadow = `8px 8px 0px ${currentData.color}`;
+            
+            // 3. Change Background smoothly
+            bodyEl.style.backgroundColor = currentData.bg;
+
+            // 4. Start Enter Animation
+            letterEl.classList.add(currentData.enter);
+            
+            // 5. Speak!
+            if (isPlaying) {
+                speakLetter(currentData.char);
+            }
+
+            // Schedule Idle
+            animationTimeout = setTimeout(() => {
+                if(!isPlaying) return;
+                
+                letterEl.classList.remove(currentData.enter);
+                letterEl.classList.add(currentData.idle);
+
+                // Schedule Exit
+                animationTimeout = setTimeout(() => {
+                    if(!isPlaying) return;
+
+                    letterEl.classList.remove(currentData.idle);
+                    letterEl.classList.add(currentData.exit);
+
+                    // Schedule Next Letter
+                    animationTimeout = setTimeout(() => {
+                        if(!isPlaying) return;
+                        
+                        currentIndex = (currentIndex + 1) % letters.length;
+                        updateLetter(currentIndex);
+                    }, EXIT_DURATION);
+
+                }, IDLE_DURATION);
+
+            }, ENTER_DURATION);
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                btnEl.innerText = "PAUSE";
+                updateLetter(currentIndex);
+            } else {
+                btnEl.innerText = "PLAY";
+                clearTimeout(animationTimeout);
+                // Freeze animation
+                const computedStyle = window.getComputedStyle(letterEl);
+                const transform = computedStyle.getPropertyValue('transform');
+                const opacity = computedStyle.getPropertyValue('opacity');
+                
+                letterEl.style.animation = 'none';
+                letterEl.style.transform = transform;
+                letterEl.style.opacity = opacity;
+                synth.cancel(); // Stop talking if paused
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+    </script>
+</body>
+</html>
